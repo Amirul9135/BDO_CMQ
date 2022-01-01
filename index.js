@@ -10,6 +10,8 @@ const dummyDb = {
     subscription: null
 };
 
+var port = process.env.PORT || 3000;
+
 const vapidKeys = {
     publicKey: 'BPoMkxutZXHEINP2YJStqO_Pc-T6Q8FC5C49-rvz0ep6l9q6WjRmKOE0qna0b5TA6AEn16wUtEaU-9E8gz0zLd8',
     privateKey: '-NvhXrbrSk-PAvRKjvUKC0OGICBN4VmLoANBSgC_iIM',
@@ -117,7 +119,7 @@ app.get('/send-notification', (req, res) => {
 
 
 
-app.listen(3000);
+app.listen(port);
 
 
 /*
