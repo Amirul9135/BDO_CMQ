@@ -1,0 +1,26 @@
+.round{
+    border-radius: 50%;
+}
+
+#sw_indicator{
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em; 
+    border: .2em solid whitesmoke;
+}
+
+#push_indicator{
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em; 
+    border: .2em solid whitesmoke;
+}
+
+.bg_red{
+    background-color: red; 
+}
+
+.bg_green{ 
+    background-color: greenyellow;
+}
+ 
