@@ -4,7 +4,7 @@
   "description": "Bdo market queue listener",
   "main": "index.js",
   "scripts": {
-    "test": "npm start"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
