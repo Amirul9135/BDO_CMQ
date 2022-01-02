@@ -2,10 +2,8 @@ var QueuedListJSON;
 var strItems;
 var rootDir = "https://bdo-cmq.herokuapp.com/";
 
-function initPage() { 
-    //getQueue(); 
-
-
+function initPage() {
+   // getQueue();
 }
 
 function getQueue() {
@@ -15,13 +13,19 @@ function getQueue() {
 
     xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-            QueuedListJSON = JSON.parse(xmlHttp.responseText);
-            if (QueuedListJSON['resultMsg'] == "0") {
-                console.log("empty");
+            console.log(xmlHttp.responseText);
+            var resJSON = JSON.parse(xmlHttp.responseText);
+            if (resJSON.length == 0) {
+
             } else {
-                console.log(QueuedListJSON);
-                parseJsonToItems();
-                ListQueuedItems();
+
+                for (var i = 0; i < resJSON.length; i++) { 
+                    var parent = document.getElementById("queue_display");
+                    parent.innerHTML = "";
+                    var newdiv = document.createElement("div");
+                    newdiv.innerHTML = resJSON[i];
+                    parent.appendChild(newdiv);
+                }
             }
         }
     }
@@ -66,4 +70,3 @@ function getItemName(id) {
 function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
-

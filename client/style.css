@@ -1,19 +1,41 @@
 .round{
     border-radius: 50%;
 }
-
-#sw_indicator{
-    display: inline-block;
-    width: 1.5em;
-    height: 1.5em; 
-    border: .2em solid whitesmoke;
+ 
+#q_title{
+    font-size: 2em;
+    text-align: center;
+    padding-top: .5em;
+    padding-bottom: .5em;
+    background-color: rgba(0, 0, 0, 0.6);
+    
 }
-
-#push_indicator{
-    display: inline-block;
-    width: 1.5em;
-    height: 1.5em; 
-    border: .2em solid whitesmoke;
+#queue_wrap{
+    display: flex;
+    margin: auto;
+    width: 95%;
+    height: 90%;
+    overflow-y: auto;
+    border-bottom-right-radius: 1em;
+    border-bottom-left-radius: 1em;
+    position: relative;
+    background-color: rgba(200, 200, 200, 0.8);
+    text-align: center;
+}
+#currrent_queue_panel{
+    display: block;
+    position: absolute;
+    width: 60vw;
+    height: 80vh;
+    background-color: red;
+    margin: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    border-radius: 1em;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    overflow: hidden;
 }
 
 .bg_red{
@@ -24,3 +46,51 @@
     background-color: greenyellow;
 }
  
+body{
+    margin: 0;
+    background-color: rgba(10, 10, 40, 1);
+}
+#H_title{
+    font-size: 2.5em; 
+    height: 5vh;
+    background-color: black; 
+    text-align: center;
+    padding: .5em;
+}
+
+.glow {
+  font-size: 80px;
+  color: #fff; 
+  -webkit-animation: glow 1s ease-in-out infinite alternate;
+  -moz-animation: glow 1s ease-in-out infinite alternate;
+  animation: glow 1s ease-in-out infinite alternate;
+}
+
+@-webkit-keyframes glow {
+  from {
+    text-shadow: 0 0 .25em #fff, 0 0 .5em #fff, 0 0 7.5em #0054db, 0 0 .8em #0054db, 0 0 1em #0054db, 0 0 1.25em #0054db, 0 0 1.5em #0054db;
+  }
+  to {
+    text-shadow: 0 0 .5em #fff, 0 0 .75em #3381ff, 0 0 .75em #3381ff, 0 0 1em #3381ff, 0 0 1.15em #3381ff, 0 0 1.25em #3381ff, 0 0 1.5em #3381ff;
+  }
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: .5em;
+}
+
+/* Track */
+::-webkit-scrollbar-track { 
+  background: #888;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #f1f1f1;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

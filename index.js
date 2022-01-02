@@ -5,7 +5,9 @@ const request = require('request');
 const app = express();
 
 const nameDB = require('./db/itemsName.json');
+const categoryDB = require('./db/itemCategory.json');
 
+const StrEnhancement = ["[I]PRI","[II]DUO","[III]TRI","[IV]TET","[V]PEN"]; 
 
 
 
@@ -41,7 +43,7 @@ var notificationChannel;
 client.on('ready', () => {
     console.log("Bot ready");
     botChannel = client.channels.cache.find(channel => channel.name === 'items-queue');
-    notificationChannel = client.channels.cache.find(channel => channel.name === 'items-queue-notification'); 
+    notificationChannel = client.channels.cache.find(channel => channel.name === 'items-queue-notification');
     getQueuedItems();
 });
 
@@ -83,11 +85,17 @@ function doRequest() {
                 resolve(body);
                 if (JSON.parse(res.body)["resultMsg"] == "0") {
                     console.log("no item");
-                } else if (queuedItemsCache['resultMsg'] != JSON.parse(res.body)["resultMsg"]) {
+                } else if (compareQueue(JSON.parse(res.body)["resultMsg"])) {
                     console.log("new item");
                     queuedItemsCache = JSON.parse(res.body);
-                    generateList();
-                    notify_channel(); 
+                    var itemsList = generateList();
+                    var strMSG = "```Queue changes:\n";
+                    for(var i = 0; i < itemsList.length;i++ ){
+                        strMSG += itemsList[i] + "\n";
+                    }
+                    strMSG += "```"; 
+                    notifyUser('434616046041956352', strMSG);
+                    notify_channel();
                 }
             } else {
                 reject(error);
@@ -97,20 +105,35 @@ function doRequest() {
     });
 }
 
+function compareQueue(newResultMsg) { //return true if different
+    var strCurItem = queuedItemsCache['resultMsg'].split('|');
+    var strNew = newResultMsg.split('|');
+
+    if (strNew.length > strCurItem.length) {
+        return true;
+
+    } else {
+        for (var i = 0; i < strNew.length - 1; i++) {
+            if (strCurItem.indexOf(strNew[i]) == -1) { //item not found in current, change = true
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 function generateList() {
     var strRes = queuedItemsCache['resultMsg'];
     var strItems = strRes.split('|');
-    var strList = new Array();
-    var strMSG = "```Queue Changed : \n";
+    var strList = new Array(); 
     for (var i = 0; i < strItems.length - 1; i++) {
         var strAtt = strItems[i].split('-');
         var strName = getName(strAtt[0]);
-        strList[i] = strName + " | Enhancement : " + strAtt[1] + " | Price : " + numberWithCommas(strAtt[2]) + " | List time : " + parseDate(strAtt[3]) + "\n"; 
-        strMSG += strList[i];
-    } 
-    strMSG += "```"; 
-    notifyUser('434616046041956352', strMSG);  
-    
+        strList[i] = parseEnhancement(strAtt[0],strAtt[1]) + " : " + strName + " | Price : " + numberWithCommas(strAtt[2]) + " | List time : " + formatDateTime(convertTZ(parseDate(strAtt[3]), "Asia/Kuala_Lumpur"));
+    }  
+    return strList;
+
 }
 
 function parseDate(sec) { //bdo api return time in utcsec epoch sec from 1970 jan 1
@@ -118,6 +141,25 @@ function parseDate(sec) { //bdo api return time in utcsec epoch sec from 1970 ja
     var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
     d.setUTCSeconds(utcSeconds);
     return d;
+}
+
+function formatDateTime(dateObj) {
+    var hours = dateObj.getHours();
+    var minutes = dateObj.getMinutes();
+    var seconds = dateObj.getSeconds();
+    var ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    var strTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+    return strTime + " | " + dateObj.getDate() + "/" + dateObj.getMonth() + 1 + "/" + dateObj.getFullYear(); 
+}
+
+function convertTZ(date, tzString) {
+    return new Date((typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {
+        timeZone: tzString
+    }));
 }
 
 function numberWithCommas(x) {
@@ -136,10 +178,23 @@ async function notify_channel() {
     var humanReadableDateTime = new Date(timestamp).toLocaleString()
     notificationChannel.send("new item queued, Time: " + humanReadableDateTime);
 }
- 
+
+function parseEnhancement(id,enhc){  //consider fga later 
+    if(categoryDB[id]["category_primary"] == "20"){ 
+        return StrEnhancement[parseInt(enhc) - 1];
+    }
+    else{
+        if(parseInt(enhc)>15){
+            return StrEnhancement[parseInt(enhc) - 16];
+        }
+        else{
+            return "+" + enhc;
+        }
+    }
+}
 
 
-function notifyUser(id,message) {
+function notifyUser(id, message) {
     client.users.fetch(id, false).then((user) => {
         user.send(message);
     });
@@ -161,8 +216,19 @@ app.get('/home_script.js', function (req, res) {
     res.sendFile(path.join(__dirname, '/client/home_script.js'));
 });
 
+
+
 app.get("/getQueueList", function (req, res) {
-    var options = {
+    res.setHeader('Content-Type', 'application/json'); 
+    var strList = generateList();
+    var strResJSON = "{"; 
+    console.log(strList);
+    for(var i=0;i< strList.length ; i++){
+        strResJSON += '"' + i.toString() + '" : "' + strList[i] + '",' ; 
+    } 
+    console.log(strResJSON);
+    res.send(strResJSON);
+ /*   var options = {
         'method': 'POST',
         'url': 'https://trade.sea.playblackdesert.com/Trademarket/GetWorldMarketWaitList',
         'headers': {
@@ -173,9 +239,8 @@ app.get("/getQueueList", function (req, res) {
     };
     request(options, function (error, response) {
         if (error) throw new Error(error);
-        res.setHeader('Content-Type', 'application/json');
-        res.send(response.body);
-    });
+        res.setHeader('Content-Type', 'application/json'); 
+    });*/
 });
 
 

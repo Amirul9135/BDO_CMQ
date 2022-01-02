@@ -1,14 +1,19 @@
 <html>
 <head>
+    <title>BDO_CMQ</title>
     <link rel="stylesheet" href="style.css"> 
     <script src="home_script.js"></script>
 </head>
-<body onload="initPage()">
-    <div>Service Worker:<span id="sw_indicator" class="round"></span></div> 
-    <div>Push Manager:<span id="push_indicator" class="round"></span></div>   
-    <button onclick="start_Monitor()">Start</button>
-    <button onclick="test_push()">Poke Me</button>
-    <div id="displayPanel"></div> 
+<body onload="initPage()"> 
+    <div id="H_title" class="glow">BDO Central Market Queue[CMQ]</div>
+    <div id="currrent_queue_panel">
+        <div id="q_title">Items In current BDO SEA Central Market Queue</div>
+        <div id="queue_wrap">
+            <div id="queue_display"> 
+            </div>
+        </div>
+    </div> 
+    <div>Note: to use the tracking feature please allow discord authorization since the notification will be sent to you via discord bot</div>
 </body>
 
 </html>
