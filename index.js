@@ -7,7 +7,7 @@ const app = express();
 const nameDB = require('./db/itemsName.json');
 const categoryDB = require('./db/itemCategory.json');
 
-const StrEnhancement = ["[I]PRI","[II]DUO","[III]TRI","[IV]TET","[V]PEN"]; 
+const StrEnhancement = ["[I]PRI", "[II]DUO", "[III]TRI", "[IV]TET", "[V]PEN"];
 
 
 
@@ -43,7 +43,7 @@ var notificationChannel;
 client.on('ready', () => {
     console.log("Bot ready");
     botChannel = client.channels.cache.find(channel => channel.name === 'items-queue');
-    notificationChannel = client.channels.cache.find(channel => channel.name === 'items-queue-notification');
+    notificationChannel = client.channels.cache.find(channel => channel.name === 'cm-queue-notification');
     getQueuedItems();
 });
 
@@ -65,7 +65,7 @@ client.on('interactionCreate', async interaction => {
 
 async function getQueuedItems() {
     let res = await doRequest();
-    await sleep(10000);
+    await sleep(20000);
     getQueuedItems();
 }
 
@@ -88,14 +88,13 @@ function doRequest() {
                 } else if (compareQueue(JSON.parse(res.body)["resultMsg"])) {
                     console.log("new item");
                     queuedItemsCache = JSON.parse(res.body);
-                    var itemsList = generateList();
-                    var strMSG = "```Queue changes:\n";
-                    for(var i = 0; i < itemsList.length;i++ ){
-                        strMSG += itemsList[i] + "\n";
-                    }
-                    strMSG += "```"; 
-                    notifyUser('434616046041956352', strMSG);
-                    notify_channel();
+                    // var itemsList = generateList();
+                    // var strMSG = "```Queue changes:\n";
+                    // for(var i = 0; i < itemsList.length;i++ ){
+                    //     strMSG += itemsList[i] + "\n";
+                    // }
+                    //  strMSG += "```"; 
+                    // notify_channel();
                 }
             } else {
                 reject(error);
@@ -108,30 +107,30 @@ function doRequest() {
 function compareQueue(newResultMsg) { //return true if different
     var strCurItem = queuedItemsCache['resultMsg'].split('|');
     var strNew = newResultMsg.split('|');
-
-    if (strNew.length > strCurItem.length) {
-        return true;
-
-    } else {
-        for (var i = 0; i < strNew.length - 1; i++) {
-            if (strCurItem.indexOf(strNew[i]) == -1) { //item not found in current, change = true
-                return true;
-            }
+    var newItem = false; 
+    for (var i = 0; i < strNew.length - 1; i++) {
+        if (strCurItem.indexOf(strNew[i]) == -1) { //item not found in current, change = true    
+            var strAtt = strNew[i].split('-'); 
+            var msg = parseEnhancement(strAtt[0], strAtt[1]) + " : " + getName(strAtt[0]) + " | Price : " + numberWithCommas(strAtt[2]) + " | Going live at : " + formatDateTime(convertTZ(parseDate(strAtt[3]), "Asia/Kuala_Lumpur"));
+            notifyUser('434616046041956352', "```" + msg + "```"); // later loop all user
+            notify_channel("```" + msg + "```");
+            newItem = true;
         }
     }
 
-    return false;
+
+    return newItem;
 }
 
 function generateList() {
     var strRes = queuedItemsCache['resultMsg'];
     var strItems = strRes.split('|');
-    var strList = new Array(); 
+    var strList = new Array();
     for (var i = 0; i < strItems.length - 1; i++) {
         var strAtt = strItems[i].split('-');
         var strName = getName(strAtt[0]);
-        strList[i] = parseEnhancement(strAtt[0],strAtt[1]) + " : " + strName + " | Price : " + numberWithCommas(strAtt[2]) + " | List time : " + formatDateTime(convertTZ(parseDate(strAtt[3]), "Asia/Kuala_Lumpur"));
-    }  
+        strList[i] = parseEnhancement(strAtt[0], strAtt[1]) + " : " + strName + " | Price : " + numberWithCommas(strAtt[2]) + " | List time : " + formatDateTime(convertTZ(parseDate(strAtt[3]), "Asia/Kuala_Lumpur"));
+    }
     return strList;
 
 }
@@ -153,7 +152,7 @@ function formatDateTime(dateObj) {
     minutes = minutes < 10 ? '0' + minutes : minutes;
     seconds = seconds < 10 ? '0' + seconds : seconds;
     var strTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
-    return strTime + " | " + dateObj.getDate() + "/" + dateObj.getMonth() + 1 + "/" + dateObj.getFullYear(); 
+    return strTime + " | " + dateObj.getDate() + "/" + dateObj.getMonth() + 1 + "/" + dateObj.getFullYear();
 }
 
 function convertTZ(date, tzString) {
@@ -173,21 +172,18 @@ function sleep(ms) {
 }
 
 
-async function notify_channel() {
-    var timestamp = Date.now()
-    var humanReadableDateTime = new Date(timestamp).toLocaleString()
-    notificationChannel.send("new item queued, Time: " + humanReadableDateTime);
+async function notify_channel(msg) { 
+    if(notificationChannel)
+        notificationChannel.send(msg);
 }
 
-function parseEnhancement(id,enhc){  //consider fga later 
-    if(categoryDB[id]["category_primary"] == "20"){ 
+function parseEnhancement(id, enhc) { //consider fga later 
+    if (categoryDB[id]["category_primary"] == "20") {
         return StrEnhancement[parseInt(enhc) - 1];
-    }
-    else{
-        if(parseInt(enhc)>15){
+    } else {
+        if (parseInt(enhc) > 15) {
             return StrEnhancement[parseInt(enhc) - 16];
-        }
-        else{
+        } else {
             return "+" + enhc;
         }
     }
@@ -219,28 +215,28 @@ app.get('/home_script.js', function (req, res) {
 
 
 app.get("/getQueueList", function (req, res) {
-    res.setHeader('Content-Type', 'application/json'); 
+    res.setHeader('Content-Type', 'application/json');
     var strList = generateList();
-    var strResJSON = "{"; 
+    var strResJSON = "{";
     console.log(strList);
-    for(var i=0;i< strList.length ; i++){
-        strResJSON += '"' + i.toString() + '" : "' + strList[i] + '",' ; 
-    } 
+    for (var i = 0; i < strList.length; i++) {
+        strResJSON += '"' + i.toString() + '" : "' + strList[i] + '",';
+    }
     console.log(strResJSON);
     res.send(strResJSON);
- /*   var options = {
-        'method': 'POST',
-        'url': 'https://trade.sea.playblackdesert.com/Trademarket/GetWorldMarketWaitList',
-        'headers': {
-            'Content-Type': 'application/json',
-            'User-Agent': 'BlackDesert',
-            'Cookie': 'nlbi_2512950=e0mkGG7jk3bRFo14lq8CZwAAAAAYcOXNJ6i2peEfw4Qf+VOb; visid_incap_2512950=SPki70JzThaDGXnxcRTrdksG0GEAAAAAQUIPAAAAAACuL4enyIWHYCIoLhFE5jcB; incap_ses_1137_2512950=yHNWcPnYY0OGKZ+W8G/HD2sX0GEAAAAAitupqQuDAUe5CeswCeAb2g=='
-        }
-    };
-    request(options, function (error, response) {
-        if (error) throw new Error(error);
-        res.setHeader('Content-Type', 'application/json'); 
-    });*/
+    /*   var options = {
+           'method': 'POST',
+           'url': 'https://trade.sea.playblackdesert.com/Trademarket/GetWorldMarketWaitList',
+           'headers': {
+               'Content-Type': 'application/json',
+               'User-Agent': 'BlackDesert',
+               'Cookie': 'nlbi_2512950=e0mkGG7jk3bRFo14lq8CZwAAAAAYcOXNJ6i2peEfw4Qf+VOb; visid_incap_2512950=SPki70JzThaDGXnxcRTrdksG0GEAAAAAQUIPAAAAAACuL4enyIWHYCIoLhFE5jcB; incap_ses_1137_2512950=yHNWcPnYY0OGKZ+W8G/HD2sX0GEAAAAAitupqQuDAUe5CeswCeAb2g=='
+           }
+       };
+       request(options, function (error, response) {
+           if (error) throw new Error(error);
+           res.setHeader('Content-Type', 'application/json'); 
+       });*/
 });
 
 
