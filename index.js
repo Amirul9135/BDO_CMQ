@@ -5,7 +5,7 @@ const request = require('request');
 const app = express();
 
 const nameDB = require('./db/itemsName.json');
-const categoryDB = require('./db/itemCategory.json');
+//const categoryDB = require('./db/itemCategory.json');
 
 const StrEnhancement = ["[I]PRI", "[II]DUO", "[III]TRI", "[IV]TET", "[V]PEN"];
 
@@ -111,7 +111,7 @@ function compareQueue(newResultMsg) { //return true if different
     for (var i = 0; i < strNew.length - 1; i++) {
         if (strCurItem.indexOf(strNew[i]) == -1) { //item not found in current, change = true    
             var strAtt = strNew[i].split('-'); 
-            var msg = parseEnhancement(strAtt[0], strAtt[1]) + " : " + getName(strAtt[0]) + " | Price : " + numberWithCommas(strAtt[2]) + " | Going live at : " + formatDateTime(convertTZ(parseDate(strAtt[3]), "Asia/Kuala_Lumpur"));
+            var msg =  strAtt[1] + " : " + getName(strAtt[0]) + " | Price : " + numberWithCommas(strAtt[2]) + " | Going live at : " + formatDateTime(convertTZ(parseDate(strAtt[3]), "Asia/Kuala_Lumpur"));
             notifyUser('434616046041956352', "```" + msg + "```"); // later loop all user
             notify_channel("```" + msg + "```");
             newItem = true;
@@ -129,7 +129,7 @@ function generateList() {
     for (var i = 0; i < strItems.length - 1; i++) {
         var strAtt = strItems[i].split('-');
         var strName = getName(strAtt[0]);
-        strList[i] = parseEnhancement(strAtt[0], strAtt[1]) + " : " + strName + " | Price : " + numberWithCommas(strAtt[2]) + " | List time : " + formatDateTime(convertTZ(parseDate(strAtt[3]), "Asia/Kuala_Lumpur"));
+        strList[i] =  strAtt[1] + " : " + strName + " | Price : " + numberWithCommas(strAtt[2]) + " | List time : " + formatDateTime(convertTZ(parseDate(strAtt[3]), "Asia/Kuala_Lumpur"));
     }
     return strList;
 
@@ -176,7 +176,7 @@ async function notify_channel(msg) {
     if(notificationChannel)
         notificationChannel.send(msg);
 }
-
+/*=================================================================
 function parseEnhancement(id, enhc) { //consider fga later 
     if (categoryDB[id]["category_primary"] == "20") {
         return StrEnhancement[parseInt(enhc) - 1];
@@ -187,7 +187,7 @@ function parseEnhancement(id, enhc) { //consider fga later
             return "+" + enhc;
         }
     }
-}
+}*/
 
 
 function notifyUser(id, message) {
@@ -223,20 +223,7 @@ app.get("/getQueueList", function (req, res) {
         strResJSON += '"' + i.toString() + '" : "' + strList[i] + '",';
     }
     console.log(strResJSON);
-    res.send(strResJSON);
-    /*   var options = {
-           'method': 'POST',
-           'url': 'https://trade.sea.playblackdesert.com/Trademarket/GetWorldMarketWaitList',
-           'headers': {
-               'Content-Type': 'application/json',
-               'User-Agent': 'BlackDesert',
-               'Cookie': 'nlbi_2512950=e0mkGG7jk3bRFo14lq8CZwAAAAAYcOXNJ6i2peEfw4Qf+VOb; visid_incap_2512950=SPki70JzThaDGXnxcRTrdksG0GEAAAAAQUIPAAAAAACuL4enyIWHYCIoLhFE5jcB; incap_ses_1137_2512950=yHNWcPnYY0OGKZ+W8G/HD2sX0GEAAAAAitupqQuDAUe5CeswCeAb2g=='
-           }
-       };
-       request(options, function (error, response) {
-           if (error) throw new Error(error);
-           res.setHeader('Content-Type', 'application/json'); 
-       });*/
+    res.send(strResJSON); 
 });
 
 
